@@ -18,7 +18,7 @@ stages {
 
     stage('Checkout Code') {
         steps {
-            git branch: 'main', url: 'https://github.com/Vamsi987dev/docker-containerization.git'
+            git branch: 'main', url: 'https://github.com/Vamsi987dev/Expense-Backend.git'
         }
     }
     
@@ -34,7 +34,7 @@ stages {
     stage('Build Docker Image') {
         steps {
             sh '''
-            docker build -t $ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$ECR_REPO:$IMAGE_TAG ./expense/backend
+            docker build -t $ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$ECR_REPO:$IMAGE_TAG .
             '''
         }
     }
@@ -58,7 +58,7 @@ stages {
     stage('Deploy to Kubernetes') {
         steps {
             sh '''
-            helm upgrade --install backend ./expense/backend/helm \
+            helm upgrade --install backend ./helm \
             --namespace expense \
             --create-namespace \
             --set deployment.tag=$IMAGE_TAG \
