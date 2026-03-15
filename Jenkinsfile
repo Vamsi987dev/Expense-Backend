@@ -16,24 +16,24 @@ environment {
 
 stages {
 
-    stage('Checkout Code') {
-        steps {
-            git branch: 'main', url: 'https://github.com/Vamsi987dev/Expense-Backend.git'
-        }
-    }
-    
-    stage('SonarQube Scan') {
-        environment {
-            scannerHome = tool 'sonar-8.0'
-        }
-        steps {
-            withSonarQubeEnv('sonar-8.0') {
-                sh """
-                ${scannerHome}/bin/sonar-scanner
-                """   
+        stage('Checkout Code') {
+            steps {
+                git branch: 'main', url: 'https://github.com/Vamsi987dev/Expense-Backend.git'
             }
         }
-    }
+        
+        stage('SonarQube Scan') {
+            environment {
+                scannerHome = tool 'sonar-8.0'
+            }
+            steps {
+                withSonarQubeEnv('sonar-8.0') {
+                    sh """
+                    ${scannerHome}/bin/sonar-scanner
+                    """   
+                }
+            }
+        }
     
 //     stage('Login to ECR') {
 //         steps {
@@ -80,7 +80,7 @@ stages {
 //         }
 //     }
 
-}
+    }
 
 post {
     success {
