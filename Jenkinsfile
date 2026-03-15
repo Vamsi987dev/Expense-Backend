@@ -80,7 +80,7 @@ stages {
 //         }
 //     }
 
-// }
+}
 
 post {
     success {
