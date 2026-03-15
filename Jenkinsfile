@@ -42,22 +42,22 @@ stages {
             }
         }
     
-//     stage('Login to ECR') {
-//         steps {
-//             sh '''
-//             aws ecr get-login-password --region $AWS_REGION | \
-//             docker login --username AWS --password-stdin $ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com
-//             '''
-//         }
-//     }
+    stage('Login to ECR') {
+        steps {
+            sh '''
+            aws ecr get-login-password --region $AWS_REGION | \
+            docker login --username AWS --password-stdin $ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com
+            '''
+        }
+    }
 
-//     stage('Build Docker Image') {
-//         steps {
-//             sh '''
-//             docker build -t $ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$ECR_REPO:$IMAGE_TAG .
-//             '''
-//         }
-//     }
+    stage('Build Docker Image') {
+        steps {
+            sh '''
+            docker build -t $ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$ECR_REPO:$IMAGE_TAG .
+            '''
+        }
+    }
 
 //     stage('Push Image to ECR') {
 //         steps {
