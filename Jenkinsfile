@@ -22,52 +22,65 @@ stages {
         }
     }
     
-    stage('Login to ECR') {
+    stage('SonarQube Scan') {
+        environment {
+            scannerHome = tool 'sonar-8.0'
+        }
         steps {
-            sh '''
-            aws ecr get-login-password --region $AWS_REGION | \
-            docker login --username AWS --password-stdin $ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com
-            '''
+            withSonarQubeEnv('sonar-8.0') {
+                sh """
+                ${scannerHome}/bin/sonar-scanner
+                """   
+            }
         }
     }
+    
+//     stage('Login to ECR') {
+//         steps {
+//             sh '''
+//             aws ecr get-login-password --region $AWS_REGION | \
+//             docker login --username AWS --password-stdin $ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com
+//             '''
+//         }
+//     }
 
-    stage('Build Docker Image') {
-        steps {
-            sh '''
-            docker build -t $ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$ECR_REPO:$IMAGE_TAG .
-            '''
-        }
-    }
+//     stage('Build Docker Image') {
+//         steps {
+//             sh '''
+//             docker build -t $ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$ECR_REPO:$IMAGE_TAG .
+//             '''
+//         }
+//     }
 
-    stage('Push Image to ECR') {
-        steps {
-            sh '''
-            docker push $ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$ECR_REPO:$IMAGE_TAG
-            '''
-        }
-    }
-    stage('Authenticate to EKS') {
-        steps {
-            sh '''
-            aws eks update-kubeconfig \
-            --region $AWS_REGION \
-            --name expense-dev
-            '''
-        }
-    }
-    stage('Deploy to Kubernetes') {
-        steps {
-            sh '''
-            helm upgrade --install backend ./helm \
-            --namespace expense \
-            --create-namespace \
-            --set deployment.tag=$IMAGE_TAG \
-            --wait --timeout 5m
-            '''
-        }
-    }
+//     stage('Push Image to ECR') {
+//         steps {
+//             sh '''
+//             docker push $ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$ECR_REPO:$IMAGE_TAG
+//             '''
+//         }
+//     }
+//     stage('Authenticate to EKS') {
+//         steps {
+//             sh '''
+//             aws eks update-kubeconfig \
+//             --region $AWS_REGION \
+//             --name expense-dev
+//             '''
+//         }
+//     }
+//     stage('Deploy to Kubernetes') {
+//         steps {
+//             sh '''
+//             helm upgrade --install backend ./helm \
+//             --namespace expense \
+//             --create-namespace \
+//             --set deployment.tag=$IMAGE_TAG \
+//             --wait --timeout 5m
+//             '''
+//         }
+//     }
 
-}
+// }
 
 post {
     success {
