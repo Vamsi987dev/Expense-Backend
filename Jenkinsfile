@@ -1,103 +1,15 @@
-pipeline {
-agent { label 'agent' }
+@Library('Jenkins-shared-library') _
 
-options{
-    timeout(time: 30, unit: 'MINUTES')
-    disableConcurrentBuilds()
-    //retry(1)
+def configMap = [
+    Project  : "expense",
+    Component: "backend",
+    GitRepo  : "https://github.com/Vamsi987dev/Expense-Backend.git",
+    Branch   : "${env.BRANCH_NAME}"
+]
+
+if(env.BRANCH_NAME != 'main'){   // feature branch pipeline
+    nodejsPipeline(configMap)
 }
-
-environment {
-    AWS_REGION = 'us-east-1'
-    ACCOUNT_ID = '222634367824'
-    IMAGE_TAG = "${BUILD_NUMBER}"
-    ECR_REPO = 'expense/dev/backend'
-}
-
-stages {
-
-        stage('Checkout Code') {
-            steps {
-                git branch: 'main', url: 'https://github.com/Vamsi987dev/Expense-Backend.git'
-            }
-        }
-        
-        stage('SonarQube Scan') {
-            environment {
-                scannerHome = tool 'sonar-8.0'
-            }
-            steps {
-                withSonarQubeEnv('sonar-8.0') {
-                    sh """
-                    ${scannerHome}/bin/sonar-scanner
-                    """   
-                }
-            }
-        }
-        stage('Quality Gate') {
-            steps {
-                timeout(time: 5, unit: 'MINUTES') {
-                    waitForQualityGate abortPipeline: true
-                }
-            }
-        }
-    
-    stage('Login to ECR') {
-        steps {
-            sh '''
-            aws ecr get-login-password --region $AWS_REGION | \
-            docker login --username AWS --password-stdin $ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com
-            '''
-        }
-    }
-
-    stage('Build Docker Image') {
-        steps {
-            sh '''
-            docker build -t $ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$ECR_REPO:$IMAGE_TAG .
-            '''
-        }
-    }
-
-//     stage('Push Image to ECR') {
-//         steps {
-//             sh '''
-//             docker push $ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$ECR_REPO:$IMAGE_TAG
-//             '''
-//         }
-//     }
-//     stage('Authenticate to EKS') {
-//         steps {
-//             sh '''
-//             aws eks update-kubeconfig \
-//             --region $AWS_REGION \
-//             --name expense-dev
-//             '''
-//         }
-//     }
-//     stage('Deploy to Kubernetes') {
-//         steps {
-//             sh '''
-//             helm upgrade --install backend ./helm \
-//             --namespace expense \
-//             --create-namespace \
-//             --set deployment.tag=$IMAGE_TAG \
-//             --wait --timeout 5m
-//             '''
-//         }
-//     }
-
-    }
-
-post {
-    success {
-        echo "Docker image built and pushed successfully!"
-    }
-
-    failure {
-        echo "Pipeline failed. Check logs."
-    }
-}
-
-
+else{
+    echo "Follow the process of PROD release"
 }
